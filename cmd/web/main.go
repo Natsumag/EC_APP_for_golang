@@ -3,10 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -48,13 +50,18 @@ func (app *application) serve() error {
 	return srv.ListenAndServe()
 }
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+}
+
 func main() {
 	var cfg config
-
-	flag.IntVar(&cfg.port, "port", 4000, "server port to listen on")
+	port, _ := strconv.Atoi(os.Getenv("WEB_PORT"))
+	flag.IntVar(&cfg.port, "port", port, "server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production}")
-	flag.StringVar(&cfg.api, "api", "http://localhost:4001", "URL to api")
-
+	flag.StringVar(&cfg.api, "api", os.Getenv("API_URL"), "URL to api")
 	flag.Parse()
 
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
