@@ -1,0 +1,10 @@
+create_table("customers") {
+  t.Column("id", "integer", {primary: true})
+  t.Column("first_name", "string", {"size": 255, notnull: true})
+  t.Column("last_name", "string", {"size": 255, notnull: true})
+  t.Column("email", "string", {notnull: true})
+  t.Column("created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", {})
+  t.Column("updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", {})
+}
+
+sql("insert into customers (first_name, last_name, email) values ('Admin','User','admin@example.com');")

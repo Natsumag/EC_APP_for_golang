@@ -9,7 +9,7 @@ create_table("transactions") {
     t.Column("updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", {})
 }
 
-add_foreign_key("transactions", "transaction_status_id", {"transaction_statuses": ["id"]}, {
+add_foreign_key("transactions", "transaction_status_id", {"transaction_status": ["id"]}, {
     "on_delete": "cascade",
     "on_update": "cascade",
 })
