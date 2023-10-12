@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/gob"
 	"flag"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
 	"html/template"
 	"log"
 	"myapp/internal/driver"
+	"myapp/internal/models"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,6 +18,8 @@ import (
 
 const version = "1.0.0"
 const cssVersion = "1"
+
+var session *scs.SessionManager
 
 type config struct {
 	port int
@@ -35,6 +40,8 @@ type application struct {
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 	version       string
+	DB            models.DBModel
+	Session       *scs.SessionManager
 }
 
 func (app *application) serve() error {
@@ -58,6 +65,7 @@ func init() {
 }
 
 func main() {
+	gob.Register(TransactionData{})
 	var cfg config
 	port, _ := strconv.Atoi(os.Getenv("WEB_PORT"))
 	flag.IntVar(&cfg.port, "port", port, "server port to listen on")
@@ -78,6 +86,10 @@ func main() {
 	}
 	defer conn.Close()
 
+	// set up session
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+
 	tc := make(map[string]*template.Template)
 
 	app := &application{
@@ -86,6 +98,8 @@ func main() {
 		errorLog:      errorLog,
 		templateCache: tc,
 		version:       version,
+		DB:            models.DBModel{DB: conn},
+		Session:       session,
 	}
 
 	err = app.serve()
