@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"myapp/internal/driver"
+	"myapp/internal/models"
 	"net/http"
 	"os"
 	"strconv"
@@ -31,6 +32,7 @@ type application struct {
 	infoLog  *log.Logger
 	errorLog *log.Logger
 	version  string
+	DB       models.DBModel
 }
 
 func (app *application) serve() error {
@@ -57,9 +59,10 @@ func main() {
 	var cfg config
 
 	port, _ := strconv.Atoi(os.Getenv("API_PORT"))
+	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?parseTime=true&tls=false"
 	flag.IntVar(&cfg.port, "port", port, "server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
-	flag.StringVar(&cfg.db.dsn, "dsn", os.Getenv("DSN"), "DSN")
+	flag.StringVar(&cfg.db.dsn, "dsn", dsn, "DSN")
 	flag.Parse()
 
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
@@ -78,6 +81,7 @@ func main() {
 		infoLog:  infoLog,
 		errorLog: errorLog,
 		version:  version,
+		DB:       models.DBModel{DB: conn},
 	}
 
 	err = app.serve()
