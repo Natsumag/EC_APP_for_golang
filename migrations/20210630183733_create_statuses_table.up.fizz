@@ -1,0 +1,15 @@
+create_table("status") {
+    t.Column("id", "integer", {primary: true})
+    t.Column("name", "string", {notnull: true})
+    t.Column("created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", {})
+    t.Column("updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", {})
+}
+
+sql("insert into status (name) values ('Cleared');")
+sql("insert into status (name) values ('Refunded');")
+sql("insert into status (name) values ('Cancelled');")
+
+add_foreign_key("orders", "status_id", {"status": ["id"]}, {
+    "on_delete": "cascade",
+    "on_update": "cascade",
+})

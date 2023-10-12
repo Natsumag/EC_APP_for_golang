@@ -1,0 +1,11 @@
+create_table("users") {
+  t.Column("id", "integer", {primary: true})
+  t.Column("first_name", "string", {"size": 255, notnull: true})
+  t.Column("last_name", "string", {"size": 255, notnull: true})
+  t.Column("email", "string", {notnull: true})
+  t.Column("password", "string", {"size": 60, notnull: true})
+  t.Column("created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", {})
+  t.Column("updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", {})
+}
+
+sql("insert into users (first_name, last_name, email, password) values ('Admin','User','admin@example.com', '$2a$12$VR1wDmweaF3ZTVgEHiJrNOSi8VcS4j0eamr96A/7iOe8vlum3O3/q');")
