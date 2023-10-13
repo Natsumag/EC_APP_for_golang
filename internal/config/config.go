@@ -1,4 +1,4 @@
-package main
+package config
 
 type Config struct {
 	Status map[string]int
