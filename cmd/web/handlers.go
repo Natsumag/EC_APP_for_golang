@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"myapp/internal/cards"
+	config2 "myapp/internal/config"
 	"myapp/internal/models"
 	"net/http"
 	"strconv"
@@ -103,7 +104,7 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	config := LoadConfig()
+	config := config2.LoadConfig()
 	// create new transaction
 	txn := models.Transaction{
 		Amount:              txnData.PaymentAmount,
@@ -151,7 +152,7 @@ func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r
 		return
 	}
 
-	config := LoadConfig()
+	config := config2.LoadConfig()
 	// create new transaction
 	txn := models.Transaction{
 		Amount:              txnData.PaymentAmount,
@@ -242,6 +243,29 @@ func (app *application) ChargeOnce(w http.ResponseWriter, r *http.Request) {
 	data["widget"] = widget
 
 	if err := app.renderTemplate(w, r, "buy-once", &templateData{Data: data}, "stripe-js"); err != nil {
+		app.errorLog.Println(err)
+	}
+}
+
+func (app *application) BronzePlan(w http.ResponseWriter, r *http.Request) {
+	widget, err := app.DB.GetWidget(2)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["widget"] = widget
+	if err := app.renderTemplate(w, r, "bronze-plan", &templateData{
+		Data: data,
+	}); err != nil {
+		app.errorLog.Println(err)
+	}
+}
+
+func (app *application) BronzePlanReceipt(w http.ResponseWriter, r *http.Request) {
+
+	if err := app.renderTemplate(w, r, "receipt-plan", &templateData{}); err != nil {
 		app.errorLog.Println(err)
 	}
 }
