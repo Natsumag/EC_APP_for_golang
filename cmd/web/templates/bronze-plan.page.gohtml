@@ -84,6 +84,11 @@
             cardMessages.innerText = msg;
         }
 
+        function hidePayButton() {
+            payButton.classList.add("d-none");
+            processing.classList.remove("d-none");
+        }
+
         function val() {
             let form = document.getElementById("charge_form");
             if (form.checkValidity() === false) {
@@ -112,7 +117,7 @@
             } else {
                 let payload = {
                     plan: '{{$widget.PlanID}}',
-                    payment_method: result.payment_method.id,
+                    payment_method: result.paymentMethod.id,
                     email: document.getElementById("email").value,
                     last_four: result.paymentMethod.card.last4,
                 }
