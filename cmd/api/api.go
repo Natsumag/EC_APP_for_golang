@@ -30,6 +30,7 @@ type config struct {
 		port     int
 		username string
 		password string
+		frommail string
 	}
 	secretkey string
 	weburl    string
@@ -76,6 +77,7 @@ func main() {
 	flag.StringVar(&cfg.smtp.username, "smtpuser", os.Getenv("SMTP_USER"), "smtp user")
 	flag.StringVar(&cfg.smtp.password, "smtppass", os.Getenv("SMTP_PASSWORD"), "smtp pass")
 	flag.IntVar(&cfg.smtp.port, "smtpport", smtpport, "smtp port")
+	flag.StringVar(&cfg.smtp.frommail, "frommail", os.Getenv("SMTP_FROM_MAIL"), "from mail address")
 	flag.StringVar(&cfg.secretkey, "secretkey", os.Getenv("SECRETKEY"), "secret key")
 	flag.StringVar(&cfg.weburl, "web_url", os.Getenv("WEB_URL"), "web url")
 	flag.Parse()

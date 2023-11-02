@@ -426,7 +426,7 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 	}
 
 	data.Link = signedLink
-	err = app.SendMail("info@widgets.com", payload.Email, "Password reset request", "password-reset", data)
+	err = app.SendMail(app.config.smtp.frommail, payload.Email, "Password reset request", "password-reset", data)
 	if err != nil {
 		app.errorLog.Println(data)
 		app.badRequest(w, r, err)
