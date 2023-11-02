@@ -33,6 +33,8 @@ type config struct {
 		secret string
 		key    string
 	}
+	secretkey string
+	weburl    string
 }
 
 type application struct {
@@ -73,6 +75,8 @@ func main() {
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production}")
 	flag.StringVar(&cfg.db.dsn, "dsn", os.Getenv("DSN"), "DSN")
 	flag.StringVar(&cfg.api, "api", os.Getenv("API_URL"), "URL to api")
+	flag.StringVar(&cfg.secretkey, "secretkey", os.Getenv("SECRETKEY"), "secret key")
+	flag.StringVar(&cfg.weburl, "web_url", os.Getenv("WEB_URL"), "web url")
 	flag.Parse()
 
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
