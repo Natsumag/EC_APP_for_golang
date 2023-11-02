@@ -25,6 +25,14 @@ type config struct {
 		secret string
 		key    string
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+	}
+	secretkey string
+	weburl    string
 }
 
 type application struct {
@@ -59,10 +67,17 @@ func main() {
 	var cfg config
 
 	port, _ := strconv.Atoi(os.Getenv("API_PORT"))
+	smtpport, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?parseTime=true&tls=false"
 	flag.IntVar(&cfg.port, "port", port, "server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment {development|production|maintenance}")
 	flag.StringVar(&cfg.db.dsn, "dsn", dsn, "DSN")
+	flag.StringVar(&cfg.smtp.host, "smtphost", os.Getenv("SMTP_HOST"), "smtp host")
+	flag.StringVar(&cfg.smtp.username, "smtpuser", os.Getenv("SMTP_USER"), "smtp user")
+	flag.StringVar(&cfg.smtp.password, "smtppass", os.Getenv("SMTP_PASSWORD"), "smtp pass")
+	flag.IntVar(&cfg.smtp.port, "smtpport", smtpport, "smtp port")
+	flag.StringVar(&cfg.secretkey, "secretkey", os.Getenv("SECRETKEY"), "secret key")
+	flag.StringVar(&cfg.weburl, "web_url", os.Getenv("WEB_URL"), "web url")
 	flag.Parse()
 
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
