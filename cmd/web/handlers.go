@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"myapp/internal/cards"
 	config2 "myapp/internal/config"
+	"myapp/internal/encription"
 	"myapp/internal/models"
+	"myapp/internal/urlsinger"
 	"net/http"
 	"strconv"
 	"time"
@@ -303,4 +306,50 @@ func (app *application) Logout(w http.ResponseWriter, r *http.Request) {
 	app.Session.RenewToken(r.Context())
 
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+func (app *application) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "forgot-password", &templateData{}); err != nil {
+		app.errorLog.Println(err)
+	}
+}
+
+func (app *application) ShowResetPassword(w http.ResponseWriter, r *http.Request) {
+	theURL := r.RequestURI
+	testURL := fmt.Sprintf("%s%s", app.config.weburl, theURL)
+
+	singer := urlsinger.Singer{
+		Secret: []byte(app.config.secretkey),
+	}
+
+	valid := singer.VerifyToken(testURL)
+
+	if !valid {
+		app.errorLog.Println("invalid url tempering detected")
+		return
+	}
+
+	expired := singer.Expired(testURL, 60)
+	if expired {
+		app.errorLog.Println("url expired")
+		return
+	}
+
+	encryptor := encription.Encryption{
+		Key: []byte(app.config.secretkey),
+	}
+	encryptedEmail, err := encryptor.Encrypt(r.URL.Query().Get("email"))
+	if err != nil {
+		app.errorLog.Println("encryption failed")
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["email"] = encryptedEmail
+
+	if err := app.renderTemplate(w, r, "reset-password", &templateData{
+		Data: data,
+	}); err != nil {
+		app.errorLog.Println(err)
+	}
 }

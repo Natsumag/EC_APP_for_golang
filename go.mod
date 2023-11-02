@@ -12,4 +12,10 @@ require (
 	golang.org/x/crypto v0.14.0
 )
 
-require github.com/alexedwards/scs/mysqlstore v0.0.0-20230902070821-95fa2ac9d520 // indirect
+require (
+	github.com/alexedwards/scs/mysqlstore v0.0.0-20230902070821-95fa2ac9d520 // indirect
+	github.com/bwmarrin/go-alone v0.0.0-20190806015146-742bb55d1631 // indirect
+	github.com/toorop/go-dkim v0.0.0-20201103131630-e1cd1a0a5208 // indirect
+	github.com/xhit/go-simple-mail/v2 v2.16.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+)
