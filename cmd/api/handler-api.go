@@ -137,6 +137,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 		okey = false
 		txnMsg = msg
 	}
+
 	if okey {
 		subscription, err = card.SubscribeToPlan(stripeCustomer, data.Plan, data.Email, data.LastFour, "")
 		if err != nil {
@@ -165,6 +166,8 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 			ExpiryMonth:         data.ExpiryMonth,
 			ExpiryYear:          data.ExpiryYear,
 			TransactionStatusID: config.Status["Refunded"],
+			PaymentIntent:       subscription.ID,
+			PaymentMethod:       data.PaymentMethod,
 		}
 		txnID, err := app.SaveTransaction(txn)
 		if err != nil {
