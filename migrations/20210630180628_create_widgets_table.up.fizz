@@ -7,5 +7,3 @@ create_table("widgets") {
     t.Column("created_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", {})
     t.Column("updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", {})
 }
-
-sql("insert into widgets (name, description, inventory_level, price) values ('Widget', 'A very nice widget.', 10, 1000);")
