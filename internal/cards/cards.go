@@ -5,6 +5,7 @@ import (
 	"github.com/stripe/stripe-go/v75/customer"
 	"github.com/stripe/stripe-go/v75/paymentintent"
 	"github.com/stripe/stripe-go/v75/paymentmethod"
+	"github.com/stripe/stripe-go/v75/refund"
 	"github.com/stripe/stripe-go/v75/subscription"
 )
 
@@ -127,4 +128,36 @@ func cardErrorMessage(code stripe.ErrorCode) string {
 		msg = "your card was declined"
 	}
 	return msg
+}
+
+func (c *Card) Refund(pi string, amount int) error {
+	stripe.Key = c.Secret
+	amountToRefund := int64(amount)
+
+	refundParams := &stripe.RefundParams{
+		Amount:        &amountToRefund,
+		PaymentIntent: &pi,
+	}
+
+	_, err := refund.New(refundParams)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Card) CancelSubscription(subID string) error {
+	stripe.Key = c.Secret
+
+	params := &stripe.SubscriptionParams{
+		CancelAtPeriodEnd: stripe.Bool(true),
+	}
+
+	_, err := subscription.Update(subID, params)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
