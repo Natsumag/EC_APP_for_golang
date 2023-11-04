@@ -549,6 +549,13 @@ func (app *application) RefundCharge(w http.ResponseWriter, r *http.Request) {
 		Currency: chargeToRefund.Currency,
 	}
 
+	config := config2.LoadConfig()
+	err = app.DB.UpdateOrderStatus(chargeToRefund.ID, config.Status["Refunded"])
+	if err != nil {
+		app.badRequest(w, r, errors.New("charge was refunded"))
+		return
+	}
+
 	err = card.Refund(chargeToRefund.PaymentIntent, chargeToRefund.Amount)
 	if err != nil {
 		app.badRequest(w, r, err)
