@@ -222,7 +222,7 @@ func (m *DBModel) UpdatePasswordForUser(u User, hash string) error {
 	return nil
 }
 
-func (m *DBModel) GetAllOrders(isRecurring string) ([]*Order, error) {
+func (m *DBModel) GetAllOrders(isRecurring int) ([]*Order, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -242,12 +242,12 @@ func (m *DBModel) GetAllOrders(isRecurring string) ([]*Order, error) {
 			LEFT JOIN transactions t on o.transaction_id = t.id
 			LEFT JOIN customers c on o.customer_id = c.id
 		WHERE
-			w.is_recurring = 0
+			w.is_recurring = ?
 		ORDER BY
 			o.created_at desc
     `
 
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, isRecurring)
 	if err != nil {
 		return nil, err
 	}
@@ -285,4 +285,59 @@ func (m *DBModel) GetAllOrders(isRecurring string) ([]*Order, error) {
 		orders = append(orders, &o)
 	}
 	return orders, nil
+}
+
+func (m *DBModel) GetOrderByID(orderID, isRecurring int) (Order, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var o Order
+
+	query := `
+		SELECT
+			o.id, o.widget_id, o.transaction_id, o.customer_id,
+			o.status_id, o.quantity, o.amount, o.created_at, o.updated_at,
+			w.id, w.name,
+			t.id, t.amount, t.currency, t.last_four, t.expiry_month,
+			t.expiry_year, t.payment_intent, t.bank_return_code,
+			c.id, c.first_name, c.last_name, c.email
+		FROM
+			orders o
+			LEFT JOIN widgets w on o.widget_id = w.id
+			LEFT JOIN transactions t on o.transaction_id = t.id
+			LEFT JOIN customers c on o.customer_id = c.id
+		WHERE
+			o.id = ?
+		    AND w.is_recurring = ?
+    `
+
+	row := m.DB.QueryRowContext(ctx, query, orderID, isRecurring)
+	err := row.Scan(
+		&o.ID,
+		&o.WidgetID,
+		&o.TransactionID,
+		&o.CustomerID,
+		&o.StatusID,
+		&o.Quantity,
+		&o.Amount,
+		&o.CreatedAt,
+		&o.UpdatedAt,
+		&o.Widget.ID,
+		&o.Widget.Name,
+		&o.Transaction.ID,
+		&o.Transaction.Amount,
+		&o.Transaction.Currency,
+		&o.Transaction.LastFour,
+		&o.Transaction.ExpiryMonth,
+		&o.Transaction.ExpiryYear,
+		&o.Transaction.PaymentIntent,
+		&o.Transaction.BankReturnCode,
+		&o.Customer.ID,
+		&o.Customer.FirstName,
+		&o.Customer.LastName,
+		&o.Customer.Email)
+	if err != nil {
+		return o, err
+	}
+	return o, nil
 }
