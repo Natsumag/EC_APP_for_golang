@@ -503,3 +503,14 @@ func (app *application) AllSales(w http.ResponseWriter, r *http.Request) {
 
 	app.writeJSON(w, http.StatusOK, allSales)
 }
+
+func (app *application) AllSubscriptions(w http.ResponseWriter, r *http.Request) {
+	config := config2.LoadConfig()
+	allSales, err := app.DB.GetAllOrders(strconv.Itoa(config.IsRecurring["Recurring"]))
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, allSales)
+}
