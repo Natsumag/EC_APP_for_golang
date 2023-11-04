@@ -23,55 +23,56 @@
 
 {{define "js"}}
     <script>
-        let token = localStorage.getItem("token");
-        let tbody = document.getElementById("sales-table").getElementsByTagName("tbody")[0];
-        const requestOptions = {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token,
-            },
-        }
+        document.addEventListener("DOMContentLoaded", function () {
+            let token = localStorage.getItem("token");
+            let tbody = document.getElementById("sales-table").getElementsByTagName("tbody")[0];
+            const requestOptions = {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token,
+                },
+            }
 
-        fetch("{{.API}}/api/admin/all-sales", requestOptions)
-            .then(response => response.json())
-            .then(function (data) {
-                console.log(data)
-                if (data) {
-                    data.forEach(function (i) {
+            fetch("{{.API}}/api/admin/all-sales", requestOptions)
+                .then(response => response.json())
+                .then(function (data) {
+                    if (data) {
+                        data.forEach(function (i) {
+                            let newRow = tbody.insertRow();
+                            let newCell = newRow.insertCell();
+
+                            newCell.innerHTML = `<a href="/admin/sales/${i.id}">Order ${i.id}</a>`
+
+                            newCell = newRow.insertCell();
+                            let item = document.createTextNode(i.customer.last_name + ", " + i.customer.first_name);
+                            newCell.appendChild(item);
+
+                            newCell = newRow.insertCell();
+                            item = document.createTextNode(i.widget.name);
+                            newCell.appendChild(item);
+
+                            let currency = formatCurrency(i.transaction.amount);
+                            newCell = newRow.insertCell();
+                            item = document.createTextNode(currency);
+                            newCell.appendChild(item);
+                        })
+                    } else {
                         let newRow = tbody.insertRow();
                         let newCell = newRow.insertCell();
+                        newCell.setAttribute("colspan", "4");
+                        newCell.innerText = "no data available";
+                    }
+                })
 
-                        newCell.innerHTML = `<a href=/admin/sales/${i.id}">Order ${i.id}</a>`
-
-                        newCell = newRow.insertCell();
-                        let item = document.createTextNode(i.customer.last_name + ", " + i.customer.first_name);
-                        newCell.appendChild(item);
-
-                        newCell = newRow.insertCell();
-                        item = document.createTextNode(i.widget.name);
-                        newCell.appendChild(item);
-
-                        let currency = formatCurrency(i.transaction.amount);
-                        newCell = newRow.insertCell();
-                        item = document.createTextNode(currency);
-                        newCell.appendChild(item);
-                    })
-                } else {
-                    let newRow = tbody.insertRow();
-                    let newCell = newRow.insertCell();
-                    newCell.setAttribute("colspan", "4");
-                    newCell.innerText = "no data available";
-                }
-            })
-
-        function formatCurrency(amount) {
-            let c = parseFloat(amount);
-            return c.toLocaleString("ja-JP", {
-                style: "currency",
-                currency: "JPY",
-            });
-        }
+            function formatCurrency(amount) {
+                let c = parseFloat(amount);
+                return c.toLocaleString("ja-JP", {
+                    style: "currency",
+                    currency: "JPY",
+                });
+            }
+        })
     </script>
 {{end}}
