@@ -1,7 +1,8 @@
 package config
 
 type Config struct {
-	Status map[string]int
+	Status      map[string]int
+	IsRecurring map[string]int
 }
 
 func LoadConfig() Config {
@@ -10,6 +11,10 @@ func LoadConfig() Config {
 			"Cleared":   1,
 			"Refunded":  2,
 			"Cancelled": 3,
+		},
+		IsRecurring: map[string]int{
+			"NoRecurring": 0,
+			"Recurring":   1,
 		},
 	}
 }
