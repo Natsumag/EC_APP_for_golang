@@ -508,10 +508,7 @@ func (app *application) AllSales(w http.ResponseWriter, r *http.Request) {
 func (app *application) GetSale(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	orderID, _ := strconv.Atoi(id)
-	config := config2.LoadConfig()
-	isRecurring := config.IsRecurring["NoRecurring"]
-
-	order, err := app.DB.GetOrderByID(orderID, isRecurring)
+	order, err := app.DB.GetOrderByID(orderID)
 	if err != nil {
 		app.badRequest(w, r, err)
 		return

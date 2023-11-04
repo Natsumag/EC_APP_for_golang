@@ -287,7 +287,7 @@ func (m *DBModel) GetAllOrders(isRecurring int) ([]*Order, error) {
 	return orders, nil
 }
 
-func (m *DBModel) GetOrderByID(orderID, isRecurring int) (Order, error) {
+func (m *DBModel) GetOrderByID(orderID int) (Order, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -308,10 +308,9 @@ func (m *DBModel) GetOrderByID(orderID, isRecurring int) (Order, error) {
 			LEFT JOIN customers c on o.customer_id = c.id
 		WHERE
 			o.id = ?
-		    AND w.is_recurring = ?
     `
 
-	row := m.DB.QueryRowContext(ctx, query, orderID, isRecurring)
+	row := m.DB.QueryRowContext(ctx, query, orderID)
 	err := row.Scan(
 		&o.ID,
 		&o.WidgetID,
