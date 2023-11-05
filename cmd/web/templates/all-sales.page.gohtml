@@ -20,13 +20,29 @@
         </thead>
         <tbody></tbody>
     </table>
+    <nav>
+        <ul class="pagination" id="paginator"></ul>
+    </nav>
 {{end}}
 
 {{define "js"}}
     <script>
+        let page_size = 5;
+        let current_page = 1;
+
         document.addEventListener("DOMContentLoaded", function () {
+            updateTable(page_size, current_page);
+        })
+
+        function updateTable(pageSize, currentPage) {
             let token = localStorage.getItem("token");
             let tbody = document.getElementById("sales-table").getElementsByTagName("tbody")[0];
+            tbody.innerHTML = "";
+            let requestBody = {
+                page_size: parseInt(pageSize, 10),
+                current_page: parseInt(currentPage, 10),
+            }
+
             const requestOptions = {
                 method: 'post',
                 headers: {
@@ -34,13 +50,14 @@
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + token,
                 },
+                body: JSON.stringify(requestBody),
             }
 
             fetch("{{.API}}/api/admin/all-sales", requestOptions)
                 .then(response => response.json())
                 .then(function (data) {
-                    if (data) {
-                        data.forEach(function (i) {
+                    if (data.orders) {
+                        data.orders.forEach(function (i) {
                             let newRow = tbody.insertRow();
                             let newCell = newRow.insertCell();
 
@@ -66,14 +83,15 @@
                                 newCell.innerHTML = `<span class="badge bg-danger">refunded</span>`
                             }
                         })
+                        paginator(data.last_page, data.current_page);
                     } else {
                         let newRow = tbody.insertRow();
                         let newCell = newRow.insertCell();
-                        newCell.setAttribute("colspan", "4");
+                        newCell.setAttribute("colspan", "5");
                         newCell.innerText = "no data available";
                     }
                 })
-        })
+        }
 
         function formatCurrency(amount) {
             let c = parseFloat(amount);
@@ -81,6 +99,28 @@
                 style: "currency",
                 currency: "JPY",
             });
+        }
+
+        function paginator(pages, currentPage) {
+            let page = document.getElementById("paginator");
+            if (pages !== 0) {
+                let html = `<li class="page-item"><a href="#!" class="page-link pager" data-page="${currentPage - 1}">&lt;</a></li>`;
+                for (let i = 0; i <= pages; i++) {
+                    html += `<li class="page-item"><a href="#!" class="page-link pager" data-page="${i + 1}">${i + 1}</a></li>`;
+                }
+                html += `<li class="page-item"><a href="#!" class="page-link pager" data-page="${currentPage + 1}">&gt;</a></li>`;
+                page.innerHTML = html;
+            }
+
+            let page_btns = document.getElementsByClassName("pager");
+            for (let j = 0; j < page_btns.length; j++) {
+                page_btns[j].addEventListener("click", function (evt) {
+                    let desired_page = evt.target.getAttribute("data-page");
+                    if ((desired_page > 0) && (desired_page <= page)) {
+                        updateTable(page_size, desired_page);
+                    }
+                })
+            }
         }
     </script>
 {{end}}
