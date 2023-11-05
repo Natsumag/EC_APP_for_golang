@@ -71,7 +71,6 @@
             fetch("{{.API}}/api/authenticate", requestOptions)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
                     if (data.error === false) {
                         localStorage.setItem('token', data.authentication_token.token);
                         localStorage.setItem('token_expiry', data.authentication_token.expiry);
