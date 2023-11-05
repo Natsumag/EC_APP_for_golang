@@ -73,14 +73,14 @@
                         newCell.innerText = "no data available";
                     }
                 })
-
-            function formatCurrency(amount) {
-                let c = parseFloat(amount);
-                return c.toLocaleString("ja-JP", {
-                    style: "currency",
-                    currency: "JPY",
-                });
-            }
         })
+
+        function formatCurrency(amount) {
+            let c = parseFloat(amount);
+            return c.toLocaleString("ja-JP", {
+                style: "currency",
+                currency: "JPY",
+            });
+        }
     </script>
 {{end}}
