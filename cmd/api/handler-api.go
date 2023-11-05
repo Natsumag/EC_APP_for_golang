@@ -497,15 +497,39 @@ func (app *application) ResetPassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) AllSales(w http.ResponseWriter, r *http.Request) {
-	config := config2.LoadConfig()
-	isRecurring := config.IsRecurring["NoRecurring"]
-	allSales, err := app.DB.GetAllOrders(isRecurring)
+	var payload struct {
+		PageSize    int `json:"page_size"`
+		CurrentPage int `json:"current_page"`
+	}
+
+	err := app.readJSON(w, r, &payload)
 	if err != nil {
 		app.badRequest(w, r, err)
 		return
 	}
 
-	app.writeJSON(w, http.StatusOK, allSales)
+	config := config2.LoadConfig()
+	isRecurring := config.IsRecurring["NoRecurring"]
+	allSales, totalRecords, lastPage, err := app.DB.GetAllOrdersPaginated(isRecurring, payload.PageSize, payload.CurrentPage)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	var resp struct {
+		Orders       []*models.Order `json:"orders"`
+		CurrentPage  int             `json:"current_page"`
+		PageSize     int             `json:"page_size"`
+		TotalRecords int             `json:"total_records"`
+		LastPage     int             `json:"last_page"`
+	}
+	resp.Orders = allSales
+	resp.CurrentPage = payload.CurrentPage
+	resp.PageSize = payload.PageSize
+	resp.TotalRecords = totalRecords
+	resp.LastPage = lastPage
+
+	app.writeJSON(w, http.StatusOK, resp)
 }
 
 func (app *application) GetSale(w http.ResponseWriter, r *http.Request) {
@@ -521,15 +545,38 @@ func (app *application) GetSale(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) AllSubscriptions(w http.ResponseWriter, r *http.Request) {
-	config := config2.LoadConfig()
-	isRecurring := config.IsRecurring["Recurring"]
-	allSales, err := app.DB.GetAllOrders(isRecurring)
+	var payload struct {
+		PageSize    int `json:"page_size"`
+		CurrentPage int `json:"current_page"`
+	}
+	err := app.readJSON(w, r, &payload)
 	if err != nil {
 		app.badRequest(w, r, err)
 		return
 	}
 
-	app.writeJSON(w, http.StatusOK, allSales)
+	config := config2.LoadConfig()
+	isRecurring := config.IsRecurring["Recurring"]
+	allSubscriptions, totalRecords, lastPage, err := app.DB.GetAllOrdersPaginated(isRecurring, payload.PageSize, payload.CurrentPage)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	var resp struct {
+		Orders       []*models.Order `json:"orders"`
+		CurrentPage  int             `json:"current_page"`
+		PageSize     int             `json:"page_size"`
+		TotalRecords int             `json:"total_records"`
+		LastPage     int             `json:"last_page"`
+	}
+	resp.Orders = allSubscriptions
+	resp.CurrentPage = payload.CurrentPage
+	resp.PageSize = payload.PageSize
+	resp.TotalRecords = totalRecords
+	resp.LastPage = lastPage
+
+	app.writeJSON(w, http.StatusOK, resp)
 }
 
 func (app *application) RefundCharge(w http.ResponseWriter, r *http.Request) {
