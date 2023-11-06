@@ -18,6 +18,8 @@ func (app *application) routes() http.Handler {
 		mux.Get("/sales/{id}", app.ShowSale)
 		mux.Get("/all-subscriptions", app.AllSubscriptions)
 		mux.Get("/subscriptions/{id}", app.ShowSubscription)
+		mux.Get("/all-users", app.AllUsers)
+		mux.Get("/all-users/{id}", app.ShowUser)
 	})
 
 	mux.Get("/widget/{id}", app.ChargeOnce)
