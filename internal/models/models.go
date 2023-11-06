@@ -532,7 +532,7 @@ func (m *DBModel) EditUser(u User) error {
 			first_name = ?,
 			last_name = ?,
 			email = ?,
-			updated_at = ?,
+			updated_at = ?
 		WHERE id = ?
 	`
 	_, err := m.DB.ExecContext(ctx, stmt, u.FirstName, u.LastName, u.Email, time.Now(), u.ID)
