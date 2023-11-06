@@ -1,0 +1,30 @@
+{{template "base" .}}
+{{define "title"}}
+    all admin users
+{{end}}
+
+{{define "content"}}
+    <h2 class="mt-5">all admin users</h2>
+    <hr>
+    <div class="float-end">
+        <a class="btn btn-outline-secondary" href="/admin/all-users/0">add user</a>
+    </div>
+    <div class="clearfix"></div>
+    <table class="table table-striped" id="user-table">
+        <thead>
+        <tr>
+            <th>User</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+{{end}}
+
+{{define "js"}}
+    <script>
+        let tbody = document.getElementById("user-table").getElementsByTagName("tbody")[0];
+    </script>
+{{end}}
