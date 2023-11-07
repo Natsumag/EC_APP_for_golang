@@ -10,6 +10,7 @@ func (app *application) routes() http.Handler {
 	mux.Use(SessionLoad)
 
 	mux.Get("/", app.Home)
+	mux.Get("/websocket", app.WebsocketEndPoint)
 
 	mux.Route("/admin", func(mux chi.Router) {
 		mux.Use(app.Auth)

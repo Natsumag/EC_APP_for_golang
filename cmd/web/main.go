@@ -108,6 +108,8 @@ func main() {
 		Session:       session,
 	}
 
+	go app.ListenWebSocketChannel()
+
 	err = app.serve()
 
 	if err != nil {
