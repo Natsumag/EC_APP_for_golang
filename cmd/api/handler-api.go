@@ -749,3 +749,26 @@ func (app *application) EditUser(w http.ResponseWriter, r *http.Request) {
 
 	app.writeJSON(w, http.StatusOK, resp)
 }
+
+func (app *application) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	userID, err := strconv.Atoi(id)
+	if err != nil {
+		app.badRequest(w, r, errors.New("invalid url"))
+		return
+	}
+	err = app.DB.DeleteUser(userID)
+	if err != nil {
+		app.badRequest(w, r, errors.New("invalid url"))
+		return
+	}
+
+	var resp struct {
+		Error   bool   `json:"error"`
+		Message string `json:"message"`
+	}
+	resp.Error = false
+	resp.Message = "user edited"
+
+	app.writeJSON(w, http.StatusOK, resp)
+}

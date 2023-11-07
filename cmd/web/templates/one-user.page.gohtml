@@ -81,7 +81,27 @@
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Delete User'
             }).then((result) => {
-                console.log(id);
+                if (result.isConfirmed) {
+                    const requestOptions = {
+                        method: 'post',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token,
+                        },
+                    }
+
+                    fetch("{{.API}}/api/admin/all-users/delete/" + id, requestOptions)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                Swal.fire("Error: " + data.message);
+                                return
+                            }
+
+                            location.href = "/admin/all-users";
+                        })
+                }
             })
         })
 
