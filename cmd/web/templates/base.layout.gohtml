@@ -78,6 +78,29 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
         <script>
+            {{if eq .IsAuthenticated 1}}
+                let socket;
+                document.addEventListener("DOMContentLoaded", function () {
+                    socket = new WebSocket("ws://localhost:4000/websocket");
+                    socket.onopen = () => {
+                        console.log("success websocket connect");
+                    }
+                    socket.onclose = event => {};
+                    socket.onerror = error => {};
+                    socket.onmessage = msg => {
+                        let data = JSON.parse(msg.data);
+                        switch (data.action) {
+                            case "logout":
+                                if (data.user_id === {{.UserID}}) {
+                                    logout();
+                                }
+                                break;
+                            default:
+                        }
+                    };
+                })
+            {{end}}
+
             function logout() {
                 localStorage.removeItem("token");
                 localStorage.removeItem("token_expiry");
