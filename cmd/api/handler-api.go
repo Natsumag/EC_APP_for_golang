@@ -747,5 +747,5 @@ func (app *application) EditUser(w http.ResponseWriter, r *http.Request) {
 	resp.Error = false
 	resp.Message = "user edited"
 
-	app.writeJSON(w, http.StatusOK, user)
+	app.writeJSON(w, http.StatusOK, resp)
 }
