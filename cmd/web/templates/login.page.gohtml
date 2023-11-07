@@ -71,14 +71,15 @@
             fetch("{{.API}}/api/authenticate", requestOptions)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.error === false) {
-                        localStorage.setItem('token', data.authentication_token.token);
-                        localStorage.setItem('token_expiry', data.authentication_token.expiry);
-                        showSuccess();
-                        document.getElementById("login_form").submit();
-                    } else {
+                    if (data.error) {
                         showError(data.message);
+                        return;
                     }
+
+                    localStorage.setItem('token', data.authentication_token.token);
+                    localStorage.setItem('token_expiry', data.authentication_token.expiry);
+                    showSuccess();
+                    document.getElementById("login_form").submit();
                 })
         }
     </script>
