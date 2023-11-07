@@ -551,5 +551,12 @@ func (m *DBModel) DeleteUser(id int) error {
 	if err != nil {
 		return err
 	}
+
+	stmt = `DELETE FROM tokens WHERE user_id = ?`
+	_, err = m.DB.ExecContext(ctx, stmt, id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
