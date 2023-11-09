@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"myapp/internal/cards"
@@ -12,18 +14,6 @@ import (
 	"strconv"
 	"time"
 )
-
-func (app *application) Home(w http.ResponseWriter, r *http.Request) {
-	if err := app.renderTemplate(w, r, "home", &templateData{}); err != nil {
-		app.errorLog.Println(err)
-	}
-}
-
-func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
-	if err := app.renderTemplate(w, r, "terminal", &templateData{}); err != nil {
-		app.errorLog.Println(err)
-	}
-}
 
 type TransactionData struct {
 	FirstName       string
@@ -37,6 +27,29 @@ type TransactionData struct {
 	ExpiryMonth     int
 	ExpiryYear      int
 	BankReturnCode  string
+}
+
+type Invoice struct {
+	ID        int       `json:"id"`
+	Quantity  int       `json:"quantity"`
+	Amount    int       `json:"amount"`
+	Product   string    `json:"product"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (app *application) Home(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "home", &templateData{}); err != nil {
+		app.errorLog.Println(err)
+	}
+}
+
+func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "terminal", &templateData{}); err != nil {
+		app.errorLog.Println(err)
+	}
 }
 
 func (app *application) GetTransactionData(r *http.Request) (TransactionData, error) {
@@ -138,14 +151,54 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
-	_, err = app.SaveOrder(order)
+	orderID, err := app.SaveOrder(order)
 	if err != nil {
 		app.errorLog.Println(err)
 		return
 	}
 
+	// call invoice
+	invoice := Invoice{
+		ID:        orderID,
+		Amount:    order.Amount,
+		Product:   "Widget",
+		Quantity:  order.Quantity,
+		FirstName: txnData.FirstName,
+		LastName:  txnData.LastName,
+		Email:     txnData.Email,
+		CreatedAt: time.Now(),
+	}
+	err = app.callInvoiceMicro(invoice)
+	if err != nil {
+		app.errorLog.Println(err)
+	}
+
 	app.Session.Put(r.Context(), "receipt", txnData)
 	http.Redirect(w, r, "/receipt", http.StatusSeeOther)
+}
+
+func (app *application) callInvoiceMicro(invoice Invoice) error {
+	url := app.config.microurl + "/invoice/create-and-send"
+	out, err := json.MarshalIndent(invoice, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(out))
+	if err != nil {
+		return err
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	app.infoLog.Println(resp.Body)
+
+	return nil
 }
 
 func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r *http.Request) {
