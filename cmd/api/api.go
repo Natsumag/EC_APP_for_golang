@@ -34,6 +34,7 @@ type config struct {
 	}
 	secretkey string
 	weburl    string
+	microurl  string
 }
 
 type application struct {
@@ -80,6 +81,7 @@ func main() {
 	flag.StringVar(&cfg.smtp.frommail, "frommail", os.Getenv("SMTP_FROM_MAIL"), "from mail address")
 	flag.StringVar(&cfg.secretkey, "secretkey", os.Getenv("SECRETKEY"), "secret key")
 	flag.StringVar(&cfg.weburl, "web_url", os.Getenv("WEB_URL"), "web url")
+	flag.StringVar(&cfg.microurl, "micro_url", os.Getenv("MICRO_URL"), "micro url")
 	flag.Parse()
 
 	cfg.stripe.key = os.Getenv("STRIPE_KEY")
@@ -105,5 +107,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
