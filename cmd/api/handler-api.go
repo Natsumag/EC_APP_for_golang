@@ -13,7 +13,11 @@ import (
 	"myapp/internal/encription"
 	"myapp/internal/models"
 	"myapp/internal/urlsinger"
+	"myapp/internal/util"
+	"myapp/internal/validator"
+	"net"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -131,7 +135,29 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 		return
 	}
 
-	app.infoLog.Println(data.Email, data.LastFour, data.PaymentMethod, data.Plan)
+	//validation
+	valid := validator.New()
+	nameRegex := regexp.MustCompile("^[a-zA-Z]+$")
+	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	// first_name
+	valid.Check(len(data.FirstName) > 1 && len(data.FirstName) < 256, "first_name", "must be at least 2 and at most 255 characters")
+	valid.Check(nameRegex.MatchString(data.FirstName), "first_name", "invalid input")
+	// last_name
+	valid.Check(len(data.LastName) > 1 && len(data.LastName) < 256, "last_name", "must be at least 2 and at most 255 characters")
+	valid.Check(nameRegex.MatchString(data.LastName), "last_name", "invalid input")
+	// email
+	valid.Check(len(data.Email) > 8 || len(data.Email) < 320, "email", "must be at least 17 and at most 320 characters")
+	valid.Check(EmailRegex.MatchString(data.Email), "email", "invalid input")
+	domain, _ := util.ExtractDomain(data.Email)
+	app.infoLog.Println("domain", domain)
+	if _, err := net.LookupMX(domain); err != nil {
+		valid.Check(false, "email", "not exist domain")
+	}
+
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
+		return
+	}
 
 	card := cards.Card{
 		Secret:   app.config.stripe.secret,
