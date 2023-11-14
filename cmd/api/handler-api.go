@@ -149,7 +149,6 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 	valid.Check(len(data.Email) > 8 || len(data.Email) < 320, "email", "must be at least 17 and at most 320 characters")
 	valid.Check(EmailRegex.MatchString(data.Email), "email", "invalid input")
 	domain, _ := util.ExtractDomain(data.Email)
-	app.infoLog.Println("domain", domain)
 	if _, err := net.LookupMX(domain); err != nil {
 		valid.Check(false, "email", "not exist domain")
 	}
@@ -478,6 +477,22 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 	err := app.readJSON(w, r, &payload)
 	if err != nil {
 		app.badRequest(w, r, err)
+		return
+	}
+
+	//validation
+	valid := validator.New()
+	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	// email
+	valid.Check(len(payload.Email) > 8 || len(payload.Email) < 320, "email", "must be at least 17 and at most 320 characters")
+	valid.Check(EmailRegex.MatchString(payload.Email), "email", "invalid input")
+	domain, _ := util.ExtractDomain(payload.Email)
+	if _, err := net.LookupMX(domain); err != nil {
+		valid.Check(false, "email", "not exist domain")
+	}
+
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
 		return
 	}
 
