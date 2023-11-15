@@ -135,7 +135,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 		return
 	}
 
-	//validation
+	// validation
 	valid := validator.New()
 	nameRegex := regexp.MustCompile("^[a-zA-Z]+$")
 	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
@@ -324,7 +324,7 @@ func (app *application) CreateAuthToken(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	//validation
+	// validation
 	valid := validator.New()
 	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	// email
@@ -497,7 +497,7 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	//validation
+	// validation
 	valid := validator.New()
 	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	// email
@@ -814,6 +814,33 @@ func (app *application) EditUser(w http.ResponseWriter, r *http.Request) {
 		app.badRequest(w, r, err)
 		return
 	}
+
+	// validation
+	valid := validator.New()
+	nameRegex := regexp.MustCompile("^[a-zA-Z]+$")
+	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	// first_name
+	valid.Check(len(user.FirstName) > 1 && len(user.FirstName) < 256, "first_name", "must be at least 2 and at most 255 characters")
+	valid.Check(nameRegex.MatchString(user.FirstName), "first_name", "invalid input")
+	// last_name
+	valid.Check(len(user.LastName) > 1 && len(user.LastName) < 256, "last_name", "must be at least 2 and at most 255 characters")
+	valid.Check(nameRegex.MatchString(user.LastName), "last_name", "invalid input")
+	// email
+	valid.Check(len(user.Email) > 8 || len(user.Email) < 320, "email", "must be at least 17 and at most 320 characters")
+	valid.Check(EmailRegex.MatchString(user.Email), "email", "invalid input")
+	domain, _ := util.ExtractDomain(user.Email)
+	if _, err := net.LookupMX(domain); err != nil {
+		valid.Check(false, "email", "not exist domain")
+	}
+	// password
+	valid.Check(len(user.Password) > 8 || len(user.Password) < 256, "password", "must be at least 17 and at most 256 characters")
+	valid.Check(user.Password == user.VerifyPassword, "password", "no matching password and verify password")
+
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
+		return
+	}
+
 	if userID > 0 {
 		err = app.DB.EditUser(user)
 		if err != nil {
@@ -833,7 +860,6 @@ func (app *application) EditUser(w http.ResponseWriter, r *http.Request) {
 				app.badRequest(w, r, err)
 				return
 			}
-
 		}
 	} else {
 		newHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
