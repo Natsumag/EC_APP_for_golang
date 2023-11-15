@@ -5,19 +5,20 @@
 {{end}}
 
 {{define "content"}}
-
     <div class="alert alert-danger text-center d-none" id="login-messages"></div>
-    <form action="/login" method="post" name="login_form" id="login_form" class="d-block needs-validation charge-form" autocomplete="off" novalidate="">
+    <form action="/login" method="post" name="login_form" id="login_form" class="d-block needs-validation login_form" autocomplete="off" novalidate="">
         <h2 class="mt-2 text-center mb-3">Login</h2>
         <hr>
 
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" class="form-control" id="email" name="email" required autocomplete="email-new">
+            <div class="invalid-feedback" id="email-help"></div>
         </div>
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" name="password" required autocomplete="password-new">
+            <div class="invalid-feedback" id="password-help"></div>
         </div>
         <hr>
         <a href="javascript:void(0)" class="btn btn-primary" onclick="val()">Login</a>
@@ -70,7 +71,16 @@
             fetch("{{.API}}/api/authenticate", requestOptions)
                 .then(response => response.json())
                 .then(data => {
+                    console.log("data.error", data.error);
                     if (data.error) {
+                        console.log("afdsfsdasfdfds");
+                        document.getElementById("login_form").classList.remove("was-validated");
+                        Object.entries(data.errors).forEach((i) => {
+                            const [key, value] = i;
+                            document.getElementById(key).classList.add("is-invalid");
+                            document.getElementById(key + "-help").classList.add("invalid-feedback");
+                            document.getElementById(key + "-help").innerText = value;
+                        })
                         showError(data.message);
                         return;
                     }
@@ -78,8 +88,9 @@
                     localStorage.setItem('token', data.authentication_token.token);
                     localStorage.setItem('token_expiry', data.authentication_token.expiry);
                     showSuccess();
+
                     document.getElementById("login_form").submit();
-                })
+                });
         }
     </script>
 {{end}}

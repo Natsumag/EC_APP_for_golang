@@ -324,6 +324,23 @@ func (app *application) CreateAuthToken(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	//validation
+	valid := validator.New()
+	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	// email
+	valid.Check(len(userInput.Email) > 8 || len(userInput.Email) < 320, "email", "must be at least 17 and at most 320 characters")
+	valid.Check(EmailRegex.MatchString(userInput.Email), "email", "invalid input")
+	domain, _ := util.ExtractDomain(userInput.Email)
+	if _, err := net.LookupMX(domain); err != nil {
+		valid.Check(false, "email", "not exist domain")
+	}
+	// password
+	valid.Check(len(userInput.Password) > 8 || len(userInput.Password) < 256, "password", "must be at least 17 and at most 256 characters")
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
+		return
+	}
+
 	user, err := app.DB.GetUserByEmail(userInput.Email)
 	if err != nil {
 		app.invalidCredentials(w)
