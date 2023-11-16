@@ -6,26 +6,31 @@
 {{define "content"}}
     <h2 class="mt-5">admin user</h2>
     <hr>
-    <form method="post" action="" name="user_form" class="needs-validation" id="user_form" autocomplete="off" novalidate="">
+    <form method="post" action="" name="user_form" class="d-block needs-validation" id="user_form" autocomplete="off" novalidate="">
         <div class="mb-3">
             <label for="first_name" class="form-label">first name</label>
             <input type="text" class="form-control" id="first_name" name="first_name" autocomplete="first_name-new" required="">
+            <div class="invalid-feedback" id="first_name-help"></div>
         </div>
         <div class="mb-3">
             <label for="last_name" class="form-label">last name</label>
             <input type="text" class="form-control" id="last_name" name="last_name" autocomplete="last_name-new" required="">
+            <div class="invalid-feedback" id="last_name-help"></div>
         </div>
         <div class="mb-3">
             <label for="email" class="form-label">email</label>
             <input type="email" class="form-control" id="email" name="email" autocomplete="email-new" required="">
+            <div class="invalid-feedback" id="email-help"></div>
         </div>
         <div class="mb-3">
             <label for="password" class="form-label">password</label>
             <input type="password" class="form-control" id="password" name="password" autocomplete="password-new">
+            <div class="invalid-feedback" id="password-help"></div>
         </div>
         <div class="mb-3">
             <label for="verify_password" class="form-label">verify password</label>
             <input type="password" class="form-control" id="verify_password" name="verify_password" autocomplete="verify_password-new">
+            <div class="invalid-feedback" id="verify_password-help"></div>
         </div>
         <hr>
         <div class="float-start">
@@ -94,19 +99,18 @@
                     fetch("{{.API}}/api/admin/all-users/delete/" + id, requestOptions)
                         .then(response => response.json())
                         .then(data => {
-                            if (data.error) {
-                                Swal.fire("Error: " + data.message);
-                                return
-                            }
-                            let jsonData = {
-                                action: "deleteUser",
-                                user_id: parseInt(id, 10),
-                            }
-                            if (socket) {
-                                socket.send(JSON.stringify(jsonData));
+                            if (data.error === false) {
+                                let jsonData = {
+                                    action: "deleteUser",
+                                    user_id: parseInt(id, 10),
+                                }
+                                if (socket) {
+                                    socket.send(JSON.stringify(jsonData));
+                                }
+                                location.href = "/admin/all-users";
                             }
 
-                            location.href = "/admin/all-users";
+                            Swal.fire("Error: " + data.message);
                         })
                 }
             })
@@ -133,6 +137,7 @@
                 last_name: document.getElementById("last_name").value,
                 email: document.getElementById("email").value,
                 password: document.getElementById("password").value,
+                verify_password: document.getElementById("verify_password").value,
             }
 
             const requestOptions = {
@@ -148,11 +153,19 @@
             fetch("{{.API}}/api/admin/all-users/edit/" + id, requestOptions)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.error) {
-                        Swal.fire("Error: " + data.message);
-                        return
+                    if (data.error === false) {
+                        location.href = "/admin/all-users";
                     }
-                    location.href = "/admin/all-users";
+
+                    document.getElementById("user_form").classList.remove("was-validated");
+                    Object.entries(data.errors).forEach((i) => {
+                        const [key, value] = i;
+                        document.getElementById(key).classList.add("is-invalid");
+                        document.getElementById(key + "-help").classList.add("invalid-feedback");
+                        document.getElementById(key + "-help").innerText = value;
+                    })
+
+                    Swal.fire("Error: " + data.message);
                 })
         }
     </script>

@@ -3,10 +3,9 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/http"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 func (app *application) writeJSON(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
@@ -94,4 +93,17 @@ func (app *application) passwordMatches(hash, password string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (app *application) failedValidation(w http.ResponseWriter, r *http.Request, errors map[string][]string) {
+	var payload struct {
+		Error   bool                `json:"error"`
+		Message string              `json:"message"`
+		Errors  map[string][]string `json:"errors"`
+	}
+
+	payload.Error = true
+	payload.Message = "failed validation"
+	payload.Errors = errors
+	app.writeJSON(w, http.StatusUnprocessableEntity, payload)
 }

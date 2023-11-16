@@ -13,7 +13,11 @@ import (
 	"myapp/internal/encription"
 	"myapp/internal/models"
 	"myapp/internal/urlsinger"
+	"myapp/internal/util"
+	"myapp/internal/validator"
+	"net"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -131,7 +135,28 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 		return
 	}
 
-	app.infoLog.Println(data.Email, data.LastFour, data.PaymentMethod, data.Plan)
+	// validation
+	valid := validator.New()
+	nameRegex := regexp.MustCompile("^[a-zA-Z]+$")
+	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	// first_name
+	valid.Check(len(data.FirstName) > 1 && len(data.FirstName) < 256, "first_name", "must be at least 2 and at most 255 characters")
+	valid.Check(nameRegex.MatchString(data.FirstName), "first_name", "invalid input")
+	// last_name
+	valid.Check(len(data.LastName) > 1 && len(data.LastName) < 256, "last_name", "must be at least 2 and at most 255 characters")
+	valid.Check(nameRegex.MatchString(data.LastName), "last_name", "invalid input")
+	// email
+	valid.Check(len(data.Email) > 8 || len(data.Email) < 320, "email", "must be at least 17 and at most 320 characters")
+	valid.Check(EmailRegex.MatchString(data.Email), "email", "invalid input")
+	domain, _ := util.ExtractDomain(data.Email)
+	if _, err := net.LookupMX(domain); err != nil {
+		valid.Check(false, "email", "not exist domain")
+	}
+
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
+		return
+	}
 
 	card := cards.Card{
 		Secret:   app.config.stripe.secret,
@@ -299,6 +324,23 @@ func (app *application) CreateAuthToken(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// validation
+	valid := validator.New()
+	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	// email
+	valid.Check(len(userInput.Email) > 8 || len(userInput.Email) < 320, "email", "must be at least 17 and at most 320 characters")
+	valid.Check(EmailRegex.MatchString(userInput.Email), "email", "invalid input")
+	domain, _ := util.ExtractDomain(userInput.Email)
+	if _, err := net.LookupMX(domain); err != nil {
+		valid.Check(false, "email", "not exist domain")
+	}
+	// password
+	valid.Check(len(userInput.Password) > 8 || len(userInput.Password) < 256, "password", "must be at least 17 and at most 256 characters")
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
+		return
+	}
+
 	user, err := app.DB.GetUserByEmail(userInput.Email)
 	if err != nil {
 		app.invalidCredentials(w)
@@ -455,6 +497,22 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// validation
+	valid := validator.New()
+	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	// email
+	valid.Check(len(payload.Email) > 8 || len(payload.Email) < 320, "email", "must be at least 17 and at most 320 characters")
+	valid.Check(EmailRegex.MatchString(payload.Email), "email", "invalid input")
+	domain, _ := util.ExtractDomain(payload.Email)
+	if _, err := net.LookupMX(domain); err != nil {
+		valid.Check(false, "email", "not exist domain")
+	}
+
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
+		return
+	}
+
 	_, err = app.DB.GetUserByEmail(payload.Email)
 	app.infoLog.Println("err", err)
 	if err != nil {
@@ -499,13 +557,24 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 
 func (app *application) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email          string `json:"email"`
+		Password       string `json:"password"`
+		VerifyPassword string `json:"verify_password"`
 	}
 
 	err := app.readJSON(w, r, &payload)
 	if err != nil {
 		app.badRequest(w, r, err)
+		return
+	}
+
+	// validation
+	valid := validator.New()
+	valid.Check(len(payload.Password) > 8 || len(payload.Password) < 256, "password", "must be at least 17 and at most 256 characters")
+	valid.Check(payload.Password == payload.VerifyPassword, "password", "no matching password and verify password")
+
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
 		return
 	}
 
@@ -756,6 +825,33 @@ func (app *application) EditUser(w http.ResponseWriter, r *http.Request) {
 		app.badRequest(w, r, err)
 		return
 	}
+
+	// validation
+	valid := validator.New()
+	nameRegex := regexp.MustCompile("^[a-zA-Z]+$")
+	EmailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	// first_name
+	valid.Check(len(user.FirstName) > 1 && len(user.FirstName) < 256, "first_name", "must be at least 2 and at most 255 characters")
+	valid.Check(nameRegex.MatchString(user.FirstName), "first_name", "invalid input")
+	// last_name
+	valid.Check(len(user.LastName) > 1 && len(user.LastName) < 256, "last_name", "must be at least 2 and at most 255 characters")
+	valid.Check(nameRegex.MatchString(user.LastName), "last_name", "invalid input")
+	// email
+	valid.Check(len(user.Email) > 8 || len(user.Email) < 320, "email", "must be at least 17 and at most 320 characters")
+	valid.Check(EmailRegex.MatchString(user.Email), "email", "invalid input")
+	domain, _ := util.ExtractDomain(user.Email)
+	if _, err := net.LookupMX(domain); err != nil {
+		valid.Check(false, "email", "not exist domain")
+	}
+	// password
+	valid.Check(len(user.Password) > 8 || len(user.Password) < 256, "password", "must be at least 17 and at most 256 characters")
+	valid.Check(user.Password == user.VerifyPassword, "password", "no matching password and verify password")
+
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
+		return
+	}
+
 	if userID > 0 {
 		err = app.DB.EditUser(user)
 		if err != nil {
@@ -775,7 +871,6 @@ func (app *application) EditUser(w http.ResponseWriter, r *http.Request) {
 				app.badRequest(w, r, err)
 				return
 			}
-
 		}
 	} else {
 		newHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
