@@ -557,13 +557,24 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 
 func (app *application) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email          string `json:"email"`
+		Password       string `json:"password"`
+		VerifyPassword string `json:"verify_password"`
 	}
 
 	err := app.readJSON(w, r, &payload)
 	if err != nil {
 		app.badRequest(w, r, err)
+		return
+	}
+
+	// validation
+	valid := validator.New()
+	valid.Check(len(payload.Password) > 8 || len(payload.Password) < 256, "password", "must be at least 17 and at most 256 characters")
+	valid.Check(payload.Password == payload.VerifyPassword, "password", "no matching password and verify password")
+
+	if !valid.Valid() {
+		app.failedValidation(w, r, valid.Errors)
 		return
 	}
 
