@@ -72,8 +72,8 @@ func (app *application) GetPaymentIntent(w http.ResponseWriter, r *http.Request)
 	}
 
 	card := cards.Card{
-		Secret:   app.config.stripe.secret,
-		Key:      app.config.stripe.key,
+		Secret:   loadConfig.Stripe.Secret,
+		Key:      loadConfig.Stripe.Key,
 		Currency: payload.Currency,
 	}
 
@@ -159,8 +159,8 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 	}
 
 	card := cards.Card{
-		Secret:   app.config.stripe.secret,
-		Key:      app.config.stripe.key,
+		Secret:   loadConfig.Stripe.Secret,
+		Key:      loadConfig.Stripe.Key,
 		Currency: data.Currency,
 	}
 
@@ -261,7 +261,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 }
 
 func (app *application) callInvoiceMicro(invoice Invoice) error {
-	url := app.config.microurl + "/invoice/create-and-send"
+	url := loadConfig.MicroURL + "/invoice/create-and-send"
 	out, err := json.MarshalIndent(invoice, "", "\t")
 	if err != nil {
 		return err
@@ -444,8 +444,8 @@ func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r
 	}
 
 	card := cards.Card{
-		Secret: app.config.stripe.secret,
-		Key:    app.config.stripe.key,
+		Secret: loadConfig.Stripe.Secret,
+		Key:    loadConfig.Stripe.Key,
 	}
 
 	pi, err := card.RetrievePaymentIntent(txnData.PaymentIntent)
@@ -526,9 +526,9 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	link := fmt.Sprintf("%s/reset-password?email=%s", app.config.weburl, payload.Email)
+	link := fmt.Sprintf("%s/reset-password?email=%s", loadConfig.WebURL, payload.Email)
 	sign := urlsinger.Singer{
-		Secret: []byte(app.config.secretkey),
+		Secret: []byte(loadConfig.SecretKey),
 	}
 
 	signedLink := sign.GenerateTokenFromString(link)
@@ -538,7 +538,7 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 	}
 
 	data.Link = signedLink
-	err = app.SendMail(app.config.smtp.frommail, payload.Email, "Password reset request", "password-reset", data)
+	err = app.SendMail(loadConfig.SMTP.FromMail, payload.Email, "Password reset request", "password-reset", data)
 	if err != nil {
 		app.errorLog.Println(data)
 		app.badRequest(w, r, err)
@@ -579,7 +579,7 @@ func (app *application) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encryptor := encription.Encryption{
-		Key: []byte(app.config.secretkey),
+		Key: []byte(loadConfig.SecretKey),
 	}
 
 	email, err := encryptor.Decrypt(payload.Email)
@@ -714,8 +714,8 @@ func (app *application) RefundCharge(w http.ResponseWriter, r *http.Request) {
 	}
 
 	card := cards.Card{
-		Secret:   app.config.stripe.secret,
-		Key:      app.config.stripe.key,
+		Secret:   loadConfig.Stripe.Secret,
+		Key:      loadConfig.Stripe.Key,
 		Currency: chargeToRefund.Currency,
 	}
 
@@ -756,8 +756,8 @@ func (app *application) CancelSubscription(w http.ResponseWriter, r *http.Reques
 	}
 
 	card := cards.Card{
-		Secret:   app.config.stripe.secret,
-		Key:      app.config.stripe.key,
+		Secret:   loadConfig.Stripe.Secret,
+		Key:      loadConfig.Stripe.Key,
 		Currency: subToCancel.Currency,
 	}
 
