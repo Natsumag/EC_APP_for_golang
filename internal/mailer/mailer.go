@@ -1,47 +1,48 @@
-package main
+package mailer
 
 import (
 	"bytes"
 	"embed"
-	"fmt"
 	mail "github.com/xhit/go-simple-mail/v2"
 	"html/template"
+	"myapp/internal/config"
+	"path"
 	"time"
 )
 
-//go:embed email-templates/*
 var emailTemplatesFS embed.FS
 
-func (app *application) SendMail(from, to, subject, tmpl string, attachments []string, data interface{}) error {
-	templateToRender := fmt.Sprintf("email-templates/%s.html.tmpl", tmpl)
+// SetEmailTemplatesFS email-templatesを使い分けるための関数(初期化処理でgo:embedを定義する必要あり)
+func SetEmailTemplatesFS(fs embed.FS) {
+	emailTemplatesFS = fs
+}
+
+func SendMail(from, to, subject, tmpl string, attachments []string, data interface{}) error {
+	templateToRender := path.Join("email-templates", tmpl+".html.tmpl")
 
 	t, err := template.New("email-html").ParseFS(emailTemplatesFS, templateToRender)
 	if err != nil {
-		app.errorLog.Println(err)
 		return err
 	}
 
 	var tpl bytes.Buffer
 	if err = t.ExecuteTemplate(&tpl, "body", data); err != nil {
-		app.errorLog.Println(err)
 		return err
 	}
 
 	formattedMessage := tpl.String()
-	templateToRender = fmt.Sprintf("email-templates/%s.plain.tmpl", tmpl)
+	templateToRender = path.Join("email-templates", tmpl+".plain.tmpl")
 	t, err = template.New("email-plain").ParseFS(emailTemplatesFS, templateToRender)
 	if err != nil {
-		app.errorLog.Println(err)
 		return err
 	}
 
 	if err = t.ExecuteTemplate(&tpl, "body", data); err != nil {
-		app.errorLog.Println(err)
 		return err
 	}
 
 	plainMessage := tpl.String()
-	app.infoLog.Println(formattedMessage, plainMessage)
+	loadConfig := config.LoadConfig()
 
 	server := mail.NewSMTPClient()
 	server.Host = loadConfig.SMTP.Host
@@ -71,11 +72,8 @@ func (app *application) SendMail(from, to, subject, tmpl string, attachments []s
 
 	err = email.Send(smtpClient)
 	if err != nil {
-		app.errorLog.Println(err)
 		return err
 	}
-
-	app.infoLog.Println("send mail")
 
 	return nil
 }
