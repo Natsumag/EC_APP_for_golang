@@ -26,7 +26,6 @@ type application struct {
 	infoLog       *log.Logger
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
-	version       string
 	DB            models.DBModel
 	Session       *scs.SessionManager
 }
@@ -75,7 +74,6 @@ func main() {
 		infoLog:       infoLog,
 		errorLog:      errorLog,
 		templateCache: tc,
-		version:       version,
 		DB:            models.DBModel{DB: conn},
 		Session:       session,
 	}

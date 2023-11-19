@@ -20,7 +20,6 @@ type templateData struct {
 	IsAuthenticated      int
 	UserID               int
 	API                  string
-	CSSVersion           string
 	StripeSecretKey      string
 	StripePublishableKey string
 }

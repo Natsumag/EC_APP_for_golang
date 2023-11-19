@@ -10,15 +10,12 @@ import (
 	"time"
 )
 
-const version = "1.0.0"
-
 var loadConfig = config.LoadConfig()
 
 type application struct {
 	config   config.Config
 	infoLog  *log.Logger
 	errorLog *log.Logger
-	version  string
 }
 
 func init() {
@@ -35,7 +32,6 @@ func main() {
 		config:   loadConfig,
 		infoLog:  infoLog,
 		errorLog: errorLog,
-		version:  version,
 	}
 	app.CreateDirIfNotExist("./invoices")
 
