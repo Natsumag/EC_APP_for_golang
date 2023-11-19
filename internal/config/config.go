@@ -16,6 +16,7 @@ type Config struct {
 	}
 	SecretKey   string
 	WebURL      string
+	APIURL      string
 	MicroURL    string
 	Status      map[string]int
 	IsRecurring map[string]int
@@ -44,6 +45,7 @@ func LoadConfig() Config {
 		},
 		SecretKey: os.Getenv("SECRETKEY"),
 		WebURL:    os.Getenv("WEB_URL"),
+		APIURL:    os.Getenv("API_URL"),
 		MicroURL:  os.Getenv("MICRO_URL"),
 		Status: map[string]int{
 			"Cleared":   1,

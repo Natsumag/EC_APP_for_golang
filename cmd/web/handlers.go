@@ -67,8 +67,8 @@ func (app *application) GetTransactionData(r *http.Request) (TransactionData, er
 	amount, _ := strconv.Atoi(paymentAmount)
 
 	card := cards.Card{
-		Secret: app.config.stripe.secret,
-		Key:    app.config.stripe.key,
+		Secret: loadConfig.Stripe.Secret,
+		Key:    loadConfig.Stripe.Key,
 	}
 	pi, err := card.RetrievePaymentIntent(paymentIntent)
 	if err != nil {
@@ -178,7 +178,7 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *application) callInvoiceMicro(invoice Invoice) error {
-	url := app.config.microurl + "/invoice/create-and-send"
+	url := loadConfig.MicroURL + "/invoice/create-and-send"
 	out, err := json.MarshalIndent(invoice, "", "\t")
 	if err != nil {
 		return err
@@ -369,10 +369,10 @@ func (app *application) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) ShowResetPassword(w http.ResponseWriter, r *http.Request) {
 	theURL := r.RequestURI
-	testURL := fmt.Sprintf("%s%s", app.config.weburl, theURL)
+	testURL := fmt.Sprintf("%s%s", loadConfig.WebURL, theURL)
 
 	singer := urlsinger.Singer{
-		Secret: []byte(app.config.secretkey),
+		Secret: []byte(loadConfig.SecretKey),
 	}
 
 	valid := singer.VerifyToken(testURL)
@@ -389,7 +389,7 @@ func (app *application) ShowResetPassword(w http.ResponseWriter, r *http.Request
 	}
 
 	encryptor := encription.Encryption{
-		Key: []byte(app.config.secretkey),
+		Key: []byte(loadConfig.SecretKey),
 	}
 	encryptedEmail, err := encryptor.Encrypt(r.URL.Query().Get("email"))
 	if err != nil {
