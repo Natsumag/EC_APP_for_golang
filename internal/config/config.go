@@ -57,6 +57,12 @@ func LoadConfig() Config {
 			FromMail: os.Getenv("SMTP_FROM_MAIL"),
 			Port:     smtpport,
 		},
+		Stripe: struct {
+			Secret, Key string
+		}{
+			Secret: os.Getenv("STRIPE_KEY"),
+			Key:    os.Getenv("STRIPE_SECRET"),
+		},
 		SecretKey: os.Getenv("SECRETKEY"),
 		WebURL:    os.Getenv("WEB_URL"),
 		APIURL:    os.Getenv("API_URL"),
