@@ -21,22 +21,6 @@ const version = "1.0.0"
 var loadConfig = config.LoadConfig()
 var session *scs.SessionManager
 
-//type config struct {
-//	port int
-//	env  string
-//	api  string
-//	db   struct {
-//		dsn string
-//	}
-//	stripe struct {
-//		secret string
-//		key    string
-//	}
-//	secretkey string
-//	weburl    string
-//	microurl  string
-//}
-
 type application struct {
 	config        config.Config
 	infoLog       *log.Logger
