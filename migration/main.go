@@ -6,16 +6,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	// .env ファイルの内容を読み込む
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	dbURL := ConstructDatabaseURL()
 	log.Println("DATABASE_URL:", dbURL)
 
