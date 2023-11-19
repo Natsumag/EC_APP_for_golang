@@ -1,6 +1,8 @@
 package config
 
 import (
+	"github.com/joho/godotenv"
+	"log"
 	"os"
 	"strconv"
 )
@@ -24,9 +26,15 @@ type Config struct {
 	IsRecurring map[string]int
 }
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+}
+
 func LoadConfig() Config {
 	apiPort, _ := strconv.Atoi(os.Getenv("API_PORT"))
-	webPort, _ := strconv.Atoi(os.Getenv("Web_PORT"))
+	webPort, _ := strconv.Atoi(os.Getenv("WEB_PORT"))
 	microPort, _ := strconv.Atoi(os.Getenv("MICRO_PORT"))
 	smtpport, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?parseTime=true&tls=false"
