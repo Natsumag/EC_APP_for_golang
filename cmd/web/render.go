@@ -20,7 +20,6 @@ type templateData struct {
 	IsAuthenticated      int
 	UserID               int
 	API                  string
-	CSSVersion           string
 	StripeSecretKey      string
 	StripePublishableKey string
 }
@@ -38,9 +37,9 @@ func formatCurrency(n int) string {
 var templateFS embed.FS
 
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
-	td.API = app.config.api
-	td.StripeSecretKey = app.config.stripe.secret
-	td.StripePublishableKey = app.config.stripe.key
+	td.API = loadConfig.APIURL
+	td.StripeSecretKey = loadConfig.Stripe.Secret
+	td.StripePublishableKey = loadConfig.Stripe.Key
 
 	if app.Session.Exists(r.Context(), "userID") {
 		td.IsAuthenticated = 1
@@ -60,7 +59,7 @@ func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, p
 
 	_, templateInMap := app.templateCache[templateToRender]
 
-	if app.config.env == "production" && templateInMap {
+	if loadConfig.Env == "production" && templateInMap {
 		t = app.templateCache[templateToRender]
 	} else {
 		t, err = app.parseTemplate(partials, page, templateToRender)
