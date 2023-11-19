@@ -1,14 +1,18 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"log"
 	"myapp/internal/config"
+	"myapp/internal/mailer"
 	"net/http"
 	"os"
 	"time"
 )
 
+//go:embed email-templates/*
+var emailTemplatesFS embed.FS
 var loadConfig = config.LoadConfig()
 
 type application struct {
@@ -20,6 +24,7 @@ type application struct {
 func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	mailer.SetEmailTemplatesFS(emailTemplatesFS)
 
 	app := &application{
 		config:   loadConfig,

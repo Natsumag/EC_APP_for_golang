@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/phpdave11/gofpdf"
 	"github.com/phpdave11/gofpdf/contrib/gofpdi"
+	"myapp/internal/mailer"
 	"net/http"
 	"time"
 )
@@ -37,8 +38,9 @@ func (app *application) CreateAndSendInvoice(w http.ResponseWriter, r *http.Requ
 	attachments := []string{
 		fmt.Sprintf("./invoices/%d.pdf", order.ID),
 	}
-	err = app.SendMail(loadConfig.SMTP.FromMail, order.Email, "your invoice", "invoice", attachments, nil)
+	err = mailer.SendMail(loadConfig.SMTP.FromMail, order.Email, "your invoice", "invoice", attachments, nil)
 	if err != nil {
+		app.errorLog.Println(err)
 		app.badRequest(w, r, err)
 		return
 	}
