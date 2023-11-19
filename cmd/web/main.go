@@ -16,8 +16,6 @@ import (
 	"time"
 )
 
-const version = "1.0.0"
-
 var loadConfig = config.LoadConfig()
 var session *scs.SessionManager
 
