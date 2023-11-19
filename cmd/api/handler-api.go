@@ -9,7 +9,6 @@ import (
 	"github.com/stripe/stripe-go/v75"
 	"golang.org/x/crypto/bcrypt"
 	"myapp/internal/cards"
-	config2 "myapp/internal/config"
 	"myapp/internal/encription"
 	"myapp/internal/mailer"
 	"myapp/internal/models"
@@ -188,7 +187,6 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 	}
 
 	if okey {
-		config := config2.LoadConfig()
 		productID, _ := strconv.Atoi(data.ProductID)
 		customerID, err := app.SaveCustomer(data.FirstName, data.LastName, data.Email)
 		if err != nil {
@@ -203,7 +201,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 			LastFour:            data.LastFour,
 			ExpiryMonth:         data.ExpiryMonth,
 			ExpiryYear:          data.ExpiryYear,
-			TransactionStatusID: config.Status["Refunded"],
+			TransactionStatusID: loadConfig.Status["Refunded"],
 			PaymentIntent:       subscription.ID,
 			PaymentMethod:       data.PaymentMethod,
 		}
@@ -217,7 +215,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 			WidgetID:      productID,
 			TransactionID: txnID,
 			CustomerID:    customerID,
-			StatusID:      config.Status["Cleared"],
+			StatusID:      loadConfig.Status["Cleared"],
 			Quantity:      1,
 			Amount:        amount,
 			CreatedAt:     time.Now(),
@@ -464,7 +462,6 @@ func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r
 	txnData.LastFour = pm.Card.Last4
 	txnData.ExpiryMonth = int(pm.Card.ExpMonth)
 	txnData.ExpiryYear = int(pm.Card.ExpYear)
-	config := config2.LoadConfig()
 
 	txn := models.Transaction{
 		Amount:              txnData.PaymentAmount,
@@ -475,7 +472,7 @@ func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r
 		PaymentIntent:       txnData.PaymentIntent,
 		PaymentMethod:       txnData.PaymentMethod,
 		BankReturnCode:      pi.LatestCharge.ID,
-		TransactionStatusID: config.Status["Refunded"],
+		TransactionStatusID: loadConfig.Status["Refunded"],
 	}
 
 	_, err = app.SaveTransaction(txn)
@@ -630,9 +627,7 @@ func (app *application) AllSales(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config := config2.LoadConfig()
-	isRecurring := config.IsRecurring["NoRecurring"]
-	allSales, totalRecords, lastPage, err := app.DB.GetAllOrdersPaginated(isRecurring, payload.PageSize, payload.CurrentPage)
+	allSales, totalRecords, lastPage, err := app.DB.GetAllOrdersPaginated(loadConfig.IsRecurring["NoRecurring"], payload.PageSize, payload.CurrentPage)
 	if err != nil {
 		app.badRequest(w, r, err)
 		return
@@ -677,9 +672,7 @@ func (app *application) AllSubscriptions(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	config := config2.LoadConfig()
-	isRecurring := config.IsRecurring["Recurring"]
-	allSubscriptions, totalRecords, lastPage, err := app.DB.GetAllOrdersPaginated(isRecurring, payload.PageSize, payload.CurrentPage)
+	allSubscriptions, totalRecords, lastPage, err := app.DB.GetAllOrdersPaginated(loadConfig.IsRecurring["Recurring"], payload.PageSize, payload.CurrentPage)
 	if err != nil {
 		app.badRequest(w, r, err)
 		return
@@ -721,8 +714,7 @@ func (app *application) RefundCharge(w http.ResponseWriter, r *http.Request) {
 		Currency: chargeToRefund.Currency,
 	}
 
-	config := config2.LoadConfig()
-	err = app.DB.UpdateOrderStatus(chargeToRefund.ID, config.Status["Refunded"])
+	err = app.DB.UpdateOrderStatus(chargeToRefund.ID, loadConfig.Status["Refunded"])
 	if err != nil {
 		app.badRequest(w, r, errors.New("charge was refunded"))
 		return
@@ -769,8 +761,7 @@ func (app *application) CancelSubscription(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	config := config2.LoadConfig()
-	err = app.DB.UpdateOrderStatus(subToCancel.ID, config.Status["Cancelled"])
+	err = app.DB.UpdateOrderStatus(subToCancel.ID, loadConfig.Status["Cancelled"])
 	if err != nil {
 		app.badRequest(w, r, errors.New("charge was cancelled"))
 		return
