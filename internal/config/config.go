@@ -6,19 +6,20 @@ import (
 )
 
 type Config struct {
-	APIPort int
-	WebPort int
-	Env     string
-	DB      struct{ DSN string }
-	Stripe  struct{ Secret, Key string }
-	SMTP    struct {
+	Env       string
+	WebPort   int
+	APIPort   int
+	MicroPort int
+	WebURL    string
+	APIURL    string
+	MicroURL  string
+	DB        struct{ DSN string }
+	Stripe    struct{ Secret, Key string }
+	SecretKey string
+	SMTP      struct {
 		Host, Username, Password, FromMail string
 		Port                               int
 	}
-	SecretKey   string
-	WebURL      string
-	APIURL      string
-	MicroURL    string
 	Status      map[string]int
 	IsRecurring map[string]int
 }
@@ -26,13 +27,15 @@ type Config struct {
 func LoadConfig() Config {
 	apiPort, _ := strconv.Atoi(os.Getenv("API_PORT"))
 	webPort, _ := strconv.Atoi(os.Getenv("Web_PORT"))
+	microPort, _ := strconv.Atoi(os.Getenv("MICRO_PORT"))
 	smtpport, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?parseTime=true&tls=false"
 
 	return Config{
-		APIPort: apiPort,
-		WebPort: webPort,
-		Env:     "development", // Default value if not provided
+		APIPort:   apiPort,
+		WebPort:   webPort,
+		MicroPort: microPort,
+		Env:       "development", // Default value if not provided
 		DB: struct{ DSN string }{
 			DSN: dsn,
 		},

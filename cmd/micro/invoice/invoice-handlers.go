@@ -37,7 +37,7 @@ func (app *application) CreateAndSendInvoice(w http.ResponseWriter, r *http.Requ
 	attachments := []string{
 		fmt.Sprintf("./invoices/%d.pdf", order.ID),
 	}
-	err = app.SendMail(app.config.smtp.frommail, order.Email, "your invoice", "invoice", attachments, nil)
+	err = app.SendMail(loadConfig.SMTP.FromMail, order.Email, "your invoice", "invoice", attachments, nil)
 	if err != nil {
 		app.badRequest(w, r, err)
 		return
