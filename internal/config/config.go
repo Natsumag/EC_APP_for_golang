@@ -63,8 +63,8 @@ func LoadConfig() Config {
 		Stripe: struct {
 			Secret, Key string
 		}{
-			Secret: os.Getenv("STRIPE_KEY"),
-			Key:    os.Getenv("STRIPE_SECRET"),
+			Secret: os.Getenv("STRIPE_SECRET"),
+			Key:    os.Getenv("STRIPE_KEY"),
 		},
 		SecretKey: os.Getenv("SECRETKEY"),
 		Status: map[string]int{
