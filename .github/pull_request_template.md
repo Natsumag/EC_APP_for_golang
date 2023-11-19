@@ -13,3 +13,5 @@
 - [ ] テストケース2
 
 ## 関連Issue
+
+closes: [GitHubのissueリンク]

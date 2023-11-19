@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"myapp/internal/cards"
-	config2 "myapp/internal/config"
 	"myapp/internal/encription"
 	"myapp/internal/models"
 	"myapp/internal/urlsinger"
@@ -120,7 +119,6 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	config := config2.LoadConfig()
 	// create new transaction
 	txn := models.Transaction{
 		Amount:              txnData.PaymentAmount,
@@ -131,7 +129,7 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 		PaymentIntent:       txnData.PaymentIntentID,
 		PaymentMethod:       txnData.PaymentMethodID,
 		BankReturnCode:      txnData.BankReturnCode,
-		TransactionStatusID: config.Status["Refunded"],
+		TransactionStatusID: loadConfig.Status["Refunded"],
 	}
 
 	txnID, err := app.SaveTransaction(txn)
@@ -145,7 +143,7 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 		WidgetID:      widgetID,
 		TransactionID: txnID,
 		CustomerID:    customerID,
-		StatusID:      config.Status["Cleared"],
+		StatusID:      loadConfig.Status["Cleared"],
 		Quantity:      1,
 		Amount:        txnData.PaymentAmount,
 		CreatedAt:     time.Now(),
@@ -208,7 +206,6 @@ func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r
 		return
 	}
 
-	config := config2.LoadConfig()
 	// create new transaction
 	txn := models.Transaction{
 		Amount:              txnData.PaymentAmount,
@@ -219,7 +216,7 @@ func (app *application) VirtualTerminalPaymentSucceeded(w http.ResponseWriter, r
 		PaymentIntent:       txnData.PaymentIntentID,
 		PaymentMethod:       txnData.PaymentMethodID,
 		BankReturnCode:      txnData.BankReturnCode,
-		TransactionStatusID: config.Status["Refunded"],
+		TransactionStatusID: loadConfig.Status["Refunded"],
 	}
 
 	_, err = app.SaveTransaction(txn)
