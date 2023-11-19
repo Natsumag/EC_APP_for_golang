@@ -1,16 +1,20 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"log"
 	"myapp/internal/config"
 	"myapp/internal/driver"
+	"myapp/internal/mailer"
 	"myapp/internal/models"
 	"net/http"
 	"os"
 	"time"
 )
 
+//go:embed email-templates/*
+var emailTemplatesFS embed.FS
 var loadConfig = config.LoadConfig()
 
 type application struct {
@@ -38,6 +42,7 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	conn, err := driver.OpenDB(loadConfig.DB.DSN)
+	mailer.SetEmailTemplatesFS(emailTemplatesFS)
 	if err != nil {
 		errorLog.Fatal(err)
 	}

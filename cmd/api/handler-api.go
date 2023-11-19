@@ -11,6 +11,7 @@ import (
 	"myapp/internal/cards"
 	config2 "myapp/internal/config"
 	"myapp/internal/encription"
+	"myapp/internal/mailer"
 	"myapp/internal/models"
 	"myapp/internal/urlsinger"
 	"myapp/internal/util"
@@ -538,9 +539,10 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 	}
 
 	data.Link = signedLink
-	err = app.SendMail(loadConfig.SMTP.FromMail, payload.Email, "Password reset request", "password-reset", data)
+	err = mailer.SendMail(loadConfig.SMTP.FromMail, payload.Email, "Password reset request", "password-reset", []string{}, data)
 	if err != nil {
 		app.errorLog.Println(data)
+		app.errorLog.Println(err)
 		app.badRequest(w, r, err)
 		return
 	}
