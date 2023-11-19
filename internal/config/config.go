@@ -6,11 +6,12 @@ import (
 )
 
 type Config struct {
-	Port   int
-	Env    string
-	DB     struct{ DSN string }
-	Stripe struct{ Secret, Key string }
-	SMTP   struct {
+	APIPort int
+	WebPort int
+	Env     string
+	DB      struct{ DSN string }
+	Stripe  struct{ Secret, Key string }
+	SMTP    struct {
 		Host, Username, Password, FromMail string
 		Port                               int
 	}
@@ -23,13 +24,15 @@ type Config struct {
 }
 
 func LoadConfig() Config {
-	port, _ := strconv.Atoi(os.Getenv("API_PORT"))
+	apiPort, _ := strconv.Atoi(os.Getenv("API_PORT"))
+	webPort, _ := strconv.Atoi(os.Getenv("Web_PORT"))
 	smtpport, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?parseTime=true&tls=false"
 
 	return Config{
-		Port: port,
-		Env:  "development", // Default value if not provided
+		APIPort: apiPort,
+		WebPort: webPort,
+		Env:     "development", // Default value if not provided
 		DB: struct{ DSN string }{
 			DSN: dsn,
 		},

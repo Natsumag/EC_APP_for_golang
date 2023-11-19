@@ -33,7 +33,7 @@ type application struct {
 
 func (app *application) serve() error {
 	srv := &http.Server{
-		Addr:              fmt.Sprintf(":%d", loadConfig.Port),
+		Addr:              fmt.Sprintf(":%d", loadConfig.WebPort),
 		Handler:           app.routes(),
 		IdleTimeout:       30 * time.Second,
 		ReadTimeout:       10 * time.Second,
@@ -41,7 +41,7 @@ func (app *application) serve() error {
 		WriteTimeout:      5 * time.Second,
 	}
 
-	app.infoLog.Println(fmt.Sprintf("Starting HTTP server in %s mode on port %d", loadConfig.Env, loadConfig.Port))
+	app.infoLog.Println(fmt.Sprintf("Starting HTTP server in %s mode on port %d", loadConfig.Env, loadConfig.WebPort))
 	return srv.ListenAndServe()
 }
 
