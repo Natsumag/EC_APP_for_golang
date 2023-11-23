@@ -140,8 +140,16 @@
                 }
 
                 fetch("{{.API}}/api/create-customer-and-subscribe-to-plan", requestOptions)
-                    .then(response => response.json())
-                    .then(function (data) {
+                    .then(response => {
+                        if (!response.ok) {
+                            // HTTPステータスコードがエラーを示している場合
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message || 'Unknown error occurred');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
                         if (data.error === false) {
                             processing.classList.add("d-none");
                             showCardSuccess();
@@ -151,15 +159,25 @@
                             sessionStorage.last_four = result.paymentMethod.card.last4;
 
                             location.href = "/receipt/bronze";
+                        } else {
+                            document.getElementById("charge_form").classList.remove("was-validated");
+                            if (data.errors && typeof data.errors === 'object') {
+                                Object.entries(data.errors).forEach((i) => {
+                                    const [key, value] = i;
+                                    document.getElementById(key).classList.add("is-invalid");
+                                    document.getElementById(key + "-help").classList.add("invalid-feedback");
+                                    document.getElementById(key + "-help").innerText = value;
+                                })
+                            } else {
+                                showCardError("An unexpected error occurred.");
+                            }
+                            showPayButtons();
                         }
-                        document.getElementById("charge_form").classList.remove("was-validated");
-                        Object.entries(data.errors).forEach((i) => {
-                            const [key, value] = i;
-                            document.getElementById(key).classList.add("is-invalid");
-                            document.getElementById(key + "-help").classList.add("invalid-feedback");
-                            document.getElementById(key + "-help").innerText = value;
-                        })
-                        showPayButtons();
+                    })
+                    .catch(error => {
+                        // エラーメッセージをユーザーに表示
+                        showCardError(error.message);
+                        console.error('Error:', error);
                     });
             }
         }

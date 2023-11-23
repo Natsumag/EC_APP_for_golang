@@ -40,7 +40,7 @@ func LoadConfig() Config {
 	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?parseTime=true&tls=false"
 
 	return Config{
-		Env:       os.Getenv("ENV"), // Default value if not provided
+		Env:       os.Getenv("ENV"),
 		WebPort:   webPort,
 		APIPort:   apiPort,
 		MicroPort: microPort,
